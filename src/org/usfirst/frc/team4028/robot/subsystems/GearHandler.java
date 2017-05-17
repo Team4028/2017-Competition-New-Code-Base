@@ -9,22 +9,7 @@ import com.ctre.CANTalon.TalonControlMode;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-// This class implements all functionality for the GEAR Subsystem
-//
-//------------------------------------------------------
-//	Rev		By		 	D/T				Desc
-//	===		========	===========		=================================
-//	1		Nick		17.Feb.2017		Initial Version
-//------------------------------------------------------
-//
-// =====> For Changes see Nick Donahue (javadotmakeitwork)
-public class GearHandler {
-	// =====================================================================
-	// 2 DC Motors
-	//		1 Talon w/ Encoder	w/ Rev Limit Switch		Tilt
-	//		1 Talon w/o Encoder							Infeed / Outfeed
-	// =====================================================================
-	
+public class GearHandler extends Subsystem {
 	// define class level public constants
 	public static final double INFEED_TARGET_CMD = -0.5;
 	public static final double OUTFEED_TARGET_CMD = 0.5;
@@ -263,11 +248,6 @@ public class GearHandler {
 		
 		return _gearTiltState;
 	}
-		
-	public void FullStop() {
-		MoveTiltAxisVBus(0.0);
-		_gearInfeedMotor.set(0.0);
-	}
 	
 	public void FlapAnnReentrant()
 	{	
@@ -286,41 +266,6 @@ public class GearHandler {
 		else {
 			_flapAnnReentrantRunningMsec = System.currentTimeMillis();
 		}
-	}
-	
-	// update the Dashboard with any Climber specific data values
-	public void OutputToSmartDashboard() {
-		//%s - insert a string
-		//%d - insert a signed integer (decimal)
-		//%f - insert a real number, standard notation
-		
-		String gearTiltMtrData = "?";
-		// we only really knwo position after we have zeroed
-		if(_gearTiltAxisZeroCurrentState == GEAR_TILT_HOMING_STATE.ZEROED) {
-			gearTiltMtrData = String.format("%s (%.3f)", getTiltPosition(), _gearTiltMotor.getPosition());
-		} else {
-			gearTiltMtrData = String.format("%s (%s)", getTiltPosition(), "???");
-		}
-		SmartDashboard.putString("Gear Tilt Position", gearTiltMtrData);
-		
-		SmartDashboard.putString("Gear Tilt State", getTiltPosition());
-		
-		String gearInFeedMtrData = "?";
-		if(Math.abs(_gearInfeedMotor.getOutputVoltage()) > 0) {
-			gearInFeedMtrData = String.format("%s (%.0f%%)", 
-												"ON", 
-												(_gearInfeedMotor.getOutputVoltage() / _gearInfeedMotor.getBusVoltage())* 100);
-		} else {
-			gearInFeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
-		}
-		
-		SmartDashboard.putString("Gear In/OutFeed Cmd", gearInFeedMtrData);		
-	}
-	
-	public void UpdateLogData(LogData logData) {
-		logData.AddData("Gear:TiltPos", String.format("%.2f", _gearTiltMotor.getPosition()));
-		logData.AddData("Gear:Tilt%VBus", String.format("%.4f", (_gearTiltMotor.getOutputVoltage()) / _gearTiltMotor.getBusVoltage()));
-		logData.AddData("Gear:Outfeed%Vbus", String.format("%.2f", _gearTiltMotor.get()));
 	}
 	
 	//============================================================================================
@@ -354,5 +299,52 @@ public class GearHandler {
 	
 	public boolean getIsLastTiltMoveToFloorCallComplete() {
 		return _isLastTiltMoveToFloorCallComplete;
+	}
+
+	@Override
+	public void stop() {
+		MoveTiltAxisVBus(0.0);
+		_gearInfeedMotor.set(0.0);
+	}
+
+	@Override
+	public void zeroSensors() {
+		_gearTiltMotor.setPosition(0.0);
+	}
+
+	@Override
+	public void outputToSmartDashboard() {
+		//%s - insert a string
+		//%d - insert a signed integer (decimal)
+		//%f - insert a real number, standard notation
+		
+		String gearTiltMtrData = "?";
+		// we only really knwo position after we have zeroed
+		if(_gearTiltAxisZeroCurrentState == GEAR_TILT_HOMING_STATE.ZEROED) {
+			gearTiltMtrData = String.format("%s (%.3f)", getTiltPosition(), _gearTiltMotor.getPosition());
+		} else {
+			gearTiltMtrData = String.format("%s (%s)", getTiltPosition(), "???");
+		}
+		SmartDashboard.putString("Gear Tilt Position", gearTiltMtrData);
+		
+		SmartDashboard.putString("Gear Tilt State", getTiltPosition());
+		
+		String gearInFeedMtrData = "?";
+		if(Math.abs(_gearInfeedMotor.getOutputVoltage()) > 0) {
+			gearInFeedMtrData = String.format("%s (%.0f%%)", 
+												"ON", 
+												(_gearInfeedMotor.getOutputVoltage() / _gearInfeedMotor.getBusVoltage())* 100);
+		} else {
+			gearInFeedMtrData = String.format("%s (%.0f%%)", "off", 0.0);
+		}
+		
+		SmartDashboard.putString("Gear In/OutFeed Cmd", gearInFeedMtrData);	
+	}
+
+	@Override
+	public void updateLogData(LogData logData) {
+		logData.AddData("Gear:TiltPos", String.format("%.2f", _gearTiltMotor.getPosition()));
+		logData.AddData("Gear:Tilt%VBus", String.format("%.4f", (_gearTiltMotor.getOutputVoltage()) / _gearTiltMotor.getBusVoltage()));
+		logData.AddData("Gear:Outfeed%Vbus", String.format("%.2f", _gearTiltMotor.get()));
 	}
 }

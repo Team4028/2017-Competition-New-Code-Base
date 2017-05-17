@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //	7		Patrick		3/4	 1:31		Changing PID Values
 //  8		TomB		9.Mar.2017		Refactor for new infeed 3 motor combo
 //-------------------------------------------------------------
-public class Shooter {
+public class Shooter extends Subsystem{
 	// =====================================================================
 	// 5 DC Motors
 	//		1 Talon w/ Encoder, 	PID V Mode		2nd Stage
@@ -218,11 +218,6 @@ public class Shooter {
 	// METHODS FOLLOW
 	//============================================================================================
 	
-	public void FullStop() {
-		FullShooterStop();
-		FullShooterFeederStop();
-	}
-	
 	public void FullShooterStop() {
 		RunStg1(0);
 		RunStg2(0);
@@ -247,7 +242,7 @@ public class Shooter {
 		if (_stg2MtrTargetRPM == 0.0) {
 			ShooterMotorsReentrant();
 		} else {
-			FullStop();
+			stop();
 		}
 	}
 	
@@ -603,10 +598,73 @@ public class Shooter {
 	}
 	
 	//============================================================================================
-	// Update Smart Dashboard with Current Values
-	//============================================================================================	
+	// PROPERTY ACCESSORS FOLLOW
+	//============================================================================================
 	
-	public void OutputToSmartDashboard() {
+	// ---- Stage 1 ----------------------
+	private double getStg1ActualRPM() {
+		return _firstStgMtr.getSpeed();
+	}
+	
+	private double getStg1RPMErrorPercent() {
+		if(Math.abs(_stg1MtrTargetRPM) > 0 ) {		
+			return ((_stg1MtrTargetRPM - getStg1ActualRPM()) / _stg1MtrTargetRPM) * 100.0 * -1.0;
+		} else {
+			return 0.0;
+		}
+	}
+	
+	private double getStg1CurrentPercentVBus() {
+		double currentOutputVoltage = _firstStgMtr.getOutputVoltage();
+		double currentBusVoltage = _firstStgMtr.getBusVoltage();
+		
+		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
+		
+		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
+	}
+	
+	// ---- Stage 2 ----------------------
+	private double getStg2ActualRPM() {
+		return _secondStgMtr.getSpeed();
+	}
+	
+	private double getStg2RPMErrorPercent() {
+		if(Math.abs(_stg2MtrTargetRPM) > 0 ) {		
+			return ((_stg2MtrTargetRPM - getStg2ActualRPM()) / _stg2MtrTargetRPM) * 100.0 * -1.0;
+		} else {
+			return 0.0;
+		}
+	}
+	
+	private double getStg2CurrentPercentVBus() {
+		double currentOutputVoltage = _secondStgMtr.getOutputVoltage();
+		double currentBusVoltage = _secondStgMtr.getBusVoltage();
+		
+		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
+		
+		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
+	}
+	
+	public boolean get_isShooterMotorsReentrantRunning() {
+		return _isShooterMotorsReentrantRunning;
+	}
+	
+	public boolean get_isShooterInfeedReentrantRunning() {
+		return _isShooterInfeedReentrantRunning;
+	}
+
+	@Override
+	public void stop() {
+		FullShooterStop();
+		FullShooterFeederStop();
+	}
+
+	@Override
+	public void zeroSensors() {
+	}
+
+	@Override
+	public void outputToSmartDashboard() {
 		//%s - insert a string
 		//%d - insert a signed integer (decimal)
 		//%f - insert a real number, standard notation
@@ -716,12 +774,9 @@ public class Shooter {
 		// Light will come on when the shooter is turned on. To keep Mikey from running it the whole match!! :) 
 		SmartDashboard.putBoolean("Is Shooter Running?", _isShooterMotorsReentrantRunning);
 	}
-	
-	//============================================================================================
-	// Update Logging File
-	//============================================================================================	
-	
-	public void UpdateLogData(LogData logData){
+
+	@Override
+	public void updateLogData(LogData logData) {
 		logData.AddData("Stg1Mtr:Cmd_Rpm", String.format("%f", _stg1MtrTargetRPM));
 		logData.AddData("Stg1Mtr:Act_Rpm", String.format("%f", getStg1ActualRPM()));
 		logData.AddData("Stg1Mtr:Err_%", String.format("%.2f%%", getStg1RPMErrorPercent()));
@@ -733,61 +788,5 @@ public class Shooter {
 		logData.AddData("Stg2Mtr:%VBus", String.format("%.2f%%", getStg2CurrentPercentVBus()));
 
 		logData.AddData("Actuator Position", String.format("%.3f", _currentSliderPosition));
-	}
-	
-	//============================================================================================
-	// PROPERTY ACCESSORS FOLLOW
-	//============================================================================================
-	
-	// ---- Stage 1 ----------------------
-	private double getStg1ActualRPM() {
-		return _firstStgMtr.getSpeed();
-	}
-	
-	private double getStg1RPMErrorPercent() {
-		if(Math.abs(_stg1MtrTargetRPM) > 0 ) {		
-			return ((_stg1MtrTargetRPM - getStg1ActualRPM()) / _stg1MtrTargetRPM) * 100.0 * -1.0;
-		} else {
-			return 0.0;
-		}
-	}
-	
-	private double getStg1CurrentPercentVBus() {
-		double currentOutputVoltage = _firstStgMtr.getOutputVoltage();
-		double currentBusVoltage = _firstStgMtr.getBusVoltage();
-		
-		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
-		
-		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
-	}
-	
-	// ---- Stage 2 ----------------------
-	private double getStg2ActualRPM() {
-		return _secondStgMtr.getSpeed();
-	}
-	
-	private double getStg2RPMErrorPercent() {
-		if(Math.abs(_stg2MtrTargetRPM) > 0 ) {		
-			return ((_stg2MtrTargetRPM - getStg2ActualRPM()) / _stg2MtrTargetRPM) * 100.0 * -1.0;
-		} else {
-			return 0.0;
-		}
-	}
-	
-	private double getStg2CurrentPercentVBus() {
-		double currentOutputVoltage = _secondStgMtr.getOutputVoltage();
-		double currentBusVoltage = _secondStgMtr.getBusVoltage();
-		
-		double currentActualSpeed = (currentOutputVoltage / currentBusVoltage);
-		
-		return GeneralUtilities.RoundDouble(currentActualSpeed, 2);
-	}
-	
-	public boolean get_isShooterMotorsReentrantRunning() {
-		return _isShooterMotorsReentrantRunning;
-	}
-	
-	public boolean get_isShooterInfeedReentrantRunning() {
-		return _isShooterInfeedReentrantRunning;
 	}
 }

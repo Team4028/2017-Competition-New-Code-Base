@@ -3,30 +3,15 @@ package org.usfirst.frc.team4028.robot.subsystems;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 
 import com.ctre.CANTalon;
+
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-//This class implements all functionality for the Infeed Subsystem
-//------------------------------------------------------
-//	Rev		By		 	D/T			Desc
-//	===		========	===========	=================================
-//------------------------------------------------------
-//=====> For Changes see TBD
-public class BallInfeed {
-	// =====================================================================
-	// 1 DC Motor
-	//		1 Talon w/o Encoder				Ball Infeed
-	//
-	// 1 Solenoid
-	// 		1 Single Action/Spring Return 	Tilt
-	// =====================================================================
+public class BallInfeed extends Subsystem{
 	
 	CANTalon _fuelInfeedMtr;
 	Solenoid _fuelInfeedSolenoid;
 	
-	//============================================================================================
-	// constructor follows
-	//============================================================================================
 	public BallInfeed(int fuelInfeedMtrCanBusAddr, int PCMCanAddr, int fuelInfeedSolenoidPort) {
 		_fuelInfeedMtr = new CANTalon(fuelInfeedMtrCanBusAddr);
 		_fuelInfeedMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
@@ -36,15 +21,6 @@ public class BallInfeed {
 		_fuelInfeedSolenoid = new Solenoid(PCMCanAddr, fuelInfeedSolenoidPort);
 	}
 	
-	//============================================================================================
-	// Methods follow
-	//============================================================================================	
-
-	public void FullStop() {
-		_fuelInfeedSolenoid.set(false);				//retract Solenoid
-		_fuelInfeedMtr.set(0);						//stop motors	
-	}
-	
 	public void InfeedFuelAndExtendSolenoid(double percentVBusCmd) {
 		// run motor using joystick cmd
 		_fuelInfeedMtr.set(percentVBusCmd * -1.0);
@@ -52,14 +28,23 @@ public class BallInfeed {
 		// if running fwd or reverse fire solenoid
 		if(percentVBusCmd != 0) {
 			_fuelInfeedSolenoid.set(true);			//extend Solenoid
-		}
-		else {
+		} else {
 			_fuelInfeedSolenoid.set(false);			//retract Solenoid
 		}
 	}
+	
+	@Override
+	public void stop() {
+		_fuelInfeedSolenoid.set(false);				//retract Solenoid
+		_fuelInfeedMtr.set(0);						//stop motors	
+	}
+	
+	@Override
+	public void zeroSensors() {
+	}
 		
-	// update the Dashboard with any Infeed specific data values
-	public void OutputToSmartDashboard() {
+	@Override
+	public void outputToSmartDashboard() {
 		SmartDashboard.putBoolean("Is Fuel Infeed Tilt Extended", _fuelInfeedSolenoid.get());
 		
 		String ballInfeedMtrData = "?";
@@ -75,5 +60,7 @@ public class BallInfeed {
 		SmartDashboard.putString("Fuel Infeed", ballInfeedMtrData);
 	}
 	
-	public void UpdateLogData(LogData logData) {}
+	@Override
+	public void updateLogData(LogData logData) {
+	}
 }

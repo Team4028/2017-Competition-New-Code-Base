@@ -7,25 +7,8 @@ import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-//This class implements all functionality for the CLIMBER Subsystem
-//
-//------------------------------------------------------
-//	Rev		By		 	D/T			Desc
-//	===		========	===========	=================================
-//	0		Sydney	 	15.Feb.2017	Initial Version
-//	1		Sydney		19.Feb.2017	Fixed time and changed constants
-//------------------------------------------------------
-//
-//=====> For Changes see Sydney Sauer
-public class Climber {
-	// =====================================================================
-	// 1 DC Motor
-	//		1 Talon w/o Encoder		Climber
-	//
-	//	Note: Mechanical Ratchet Mechanism keeps the motor from running in reverse!
-	// =====================================================================
+public class Climber extends Subsystem{
 	
-	// define class level variables for Robot objects
 	private CANTalon _climberMtr;
 	
 	// define class level working variables
@@ -119,32 +102,9 @@ public class Climber {
 		}	
 	}
 	
-	public void FullStop() {
-		_climberMtr.set(0.0);
-		_isClimbing = false;
-	}
-	
 	public void SetUpClimberStatus() {
 		// This is called in Teleop Init, and it resets the climbing mechanism. 
 		_isClimberMotorStalled = false;
-	}
-
-	// update the Dashboard with any Climber specific data values
-	public void OutputToSmartDashboard() {
-		SmartDashboard.putNumber("Climber Motor Current", getActualMotorCurrent());
-		SmartDashboard.putString(" ", getIsClimberBuckets());
-	}
-	
-	// add any important data to the logdata
-	public void UpdateLogData(LogData logData)
-	{
-		logData.AddData("ClimberMtr:Cmd_%VBus", String.format("%.2f", _currentPercentVBusCmd));
-		logData.AddData("ClimberMtr:Act_%VBus", String.format("%.2f", getActualPercentVBus()));
-		
-		logData.AddData("ClimberMtr:Thold_Mtr_I", String.format("%.2f", CLIMBER_MAX_CURRENT));
-		
-		logData.AddData("ClimberMtr:Act_Mtr_I", String.format("%.2f", getActualMotorCurrent()));
-		logData.AddData("ClimberMtr:OMax_Msec", String.format("%d", _elapsedTimeSinceMotorCurrentExceededMaxThreshholdInMSec));
 	}
 	
 	//============================================================================================
@@ -170,5 +130,32 @@ public class Climber {
 		} else {
 			return "";
 		}
+	}
+
+	@Override
+	public void stop() {
+		_climberMtr.set(0.0);
+		_isClimbing = false;
+	}
+
+	@Override
+	public void zeroSensors() {
+	}
+
+	@Override
+	public void outputToSmartDashboard() {
+		SmartDashboard.putNumber("Climber Motor Current", getActualMotorCurrent());
+		SmartDashboard.putString(" ", getIsClimberBuckets());
+	}
+
+	@Override
+	public void updateLogData(LogData logData) {
+		logData.AddData("ClimberMtr:Cmd_%VBus", String.format("%.2f", _currentPercentVBusCmd));
+		logData.AddData("ClimberMtr:Act_%VBus", String.format("%.2f", getActualPercentVBus()));
+		
+		logData.AddData("ClimberMtr:Thold_Mtr_I", String.format("%.2f", CLIMBER_MAX_CURRENT));
+		
+		logData.AddData("ClimberMtr:Act_Mtr_I", String.format("%.2f", getActualMotorCurrent()));
+		logData.AddData("ClimberMtr:OMax_Msec", String.format("%d", _elapsedTimeSinceMotorCurrentExceededMaxThreshholdInMSec));
 	}
 }

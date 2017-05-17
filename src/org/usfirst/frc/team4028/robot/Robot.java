@@ -277,7 +277,7 @@ public class Robot extends IterativeRobot {
 		// =====================================
 		
 		// stop gear
-    	_gearHandler.FullStop();
+    	_gearHandler.stop();
     	_gearHandler.ZeroGearTiltAxisInit();
     	
     	_hangGearController.setIsChassisControlEnabled(false);
@@ -484,18 +484,18 @@ public class Robot extends IterativeRobot {
     	// Step 1: Setup Robot Defaults
     	// =====================================
 		// #### Chassis ####
-    	_chassis.FullStop(); 								// Stop Motors
-    	_chassis.ZeroDriveEncoders(); 						// Zero drive encoders
+    	_chassis.stop(); 								// Stop Motors
+    	_chassis.zeroSensors(); 						// Zero drive encoders
     	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);    // Set shifter to HIGH gear
     	_chassis.setIsAccDecModeEnabled(true);				// Disable acc/dec mode
 		_chassis.setDriveSpeedScalingFactor(1.0);
 		_chassis.EnablePercentVBusMode();
     	
     	// #### Climber ####
-    	_climber.FullStop();
+    	_climber.stop();
     	
     	// #### GearHandler ####
-    	_gearHandler.FullStop();
+    	_gearHandler.stop();
     	if(!_gearHandler.hasTiltAxisBeenZeroed()) { 
     		_gearHandler.ZeroGearTiltAxisInit(); 
     	} else {
@@ -505,12 +505,12 @@ public class Robot extends IterativeRobot {
     	_hangGearController.setIsChassisControlEnabled(true);
 
     	// #### Shooter ####
-    	_shooter.FullStop();
+    	_shooter.stop();
     	_shooter.MoveActuatorToDefaultPosition();
     	_shooter.ResetHopperCarousel();
     	
     	// #### Ball Infeed ####
-    	_ballInfeed.FullStop();
+    	_ballInfeed.stop();
     	
     	_navX.zeroYaw();
     	
@@ -925,21 +925,21 @@ public class Robot extends IterativeRobot {
     	_scanTimeSamples.add(new BigDecimal(scanCycleDeltaInMSecs));
     	
     	if((new Date().getTime() - _lastDashboardWriteTimeMSec) > 100) {
-	    	if(_ballInfeed != null)				{ _ballInfeed.OutputToSmartDashboard(); }
+	    	if(_ballInfeed != null)				{ _ballInfeed.outputToSmartDashboard(); }
 	    	
-	    	if(_chassis != null) 				{ _chassis.OutputToSmartDashboard(); }
+	    	if(_chassis != null) 				{ _chassis.outputToSmartDashboard(); }
 	    	
-	    	if(_climber != null)				{ _climber.OutputToSmartDashboard(); }
+	    	if(_climber != null)				{ _climber.outputToSmartDashboard(); }
 	    	
 	    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
 	    	
-	    	if(_gearHandler != null)			{ _gearHandler.OutputToSmartDashboard(); }
+	    	if(_gearHandler != null)			{ _gearHandler.outputToSmartDashboard(); }
 	    		
 	    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
 	    	
 	    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
 	    	
-	    	if(_shooter != null)				{ _shooter.OutputToSmartDashboard(); }
+	    	if(_shooter != null)				{ _shooter.outputToSmartDashboard(); }
 	    	
 	    	if(_switchableCameraServer != null) { _switchableCameraServer.OutputToSmartDashboard(); }
 	    	
@@ -970,21 +970,21 @@ public class Robot extends IterativeRobot {
 	    	
 	    	// ask each subsystem that exists to add its data
         	// 23.Apr.2017 TomB Commented most out to improve logging perf
-	    	if(_chassis != null) 			{ _chassis.UpdateLogData(logData); }
+	    	if(_chassis != null) 			{ _chassis.updateLogData(logData); }
 	    	
-	    	//if(_climber != null) 			{ _climber.UpdateLogData(logData); }
+	    	//if(_climber != null) 			{ _climber.updateLogData(logData); }
 	    		
 	    	//if(_driversStation != null) 	{ _driversStation.UpdateLogData(logData); }
 	    	
-	    	//if(_gearHandler != null) 		{ _gearHandler.UpdateLogData(logData); }
+	    	//if(_gearHandler != null) 		{ _gearHandler.updateLogData(logData); }
 	    	
-	    	//if(_ballInfeed != null) 		{ _ballInfeed.UpdateLogData(logData); }
+	    	//if(_ballInfeed != null) 		{ _ballInfeed.updateLogData(logData); }
 	    	
 	    	//if(_lidar != null)				{ _lidar.UpdateLogData(logData); }
 	    	
 	    	//if(_navX != null) 				{ _navX.UpdateLogData(logData); }
 	    	
-	    	if(_shooter != null)			{ _shooter.UpdateLogData(logData); }
+	    	if(_shooter != null)			{ _shooter.updateLogData(logData); }
 	    	
 	    	//if(_roboRealmClient != null) 	{ _roboRealmClient.UpdateLogData(logData); }
 	    	

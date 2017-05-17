@@ -326,8 +326,8 @@ public class TrajectoryDriveController {
 		_rightFollower.setTrajectoryNumPoints(_trajectoryNumPoints);
 		_leftFollower.reset();
 		_rightFollower.reset();
-		_chassis.ZeroDriveEncoders();
-		_chassis.FullStop();
+		_chassis.zeroSensors();
+		_chassis.stop();
 		_navX.zeroYaw();
 		_currentSegment = 0;
 		_isEnabled = true;
@@ -336,7 +336,7 @@ public class TrajectoryDriveController {
 	
 	public void disable() { 
 		_isEnabled = false; 
-		_chassis.FullStop();
+		_chassis.stop();
 	}
 	
 	public boolean isEnable() { 

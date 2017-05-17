@@ -75,6 +75,6 @@ public class ChassisAutoAimController {
 	}
 	
 	public void ChassisFullStop() {
-		_chassis.FullStop();
+		_chassis.stop();
 	}
 }

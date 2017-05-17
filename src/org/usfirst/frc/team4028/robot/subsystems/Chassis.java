@@ -12,22 +12,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-//This class implements all functionality for the GEAR Subsystem
-//------------------------------------------------------
-//	Rev		By		 	D/T			Desc
-//	===		========	===========	=================================
-//  1.0		Seabass		25.Feb.2017		Initial 
-//------------------------------------------------------
-//=====> For Changes see Sebastian Rodriguez
-public class Chassis {
-	// =====================================================================
-	// 4 DC Motors
-	//		2 Talon w/ Encoder		Left + Right Master
-	//		2 Talon w/o Encoder		Left + Right Slave
-	//
-	// 1 Solenoid
-	// 		1 Dual Action 			Shifter
-	// =====================================================================
+public class Chassis extends Subsystem{
 	
 	// define class level variables for Robot objects
 	private CANTalon _leftDriveMaster, _leftDriveSlave, _rightDriveMaster, _rightDriveSlave;
@@ -184,12 +169,6 @@ public class Chassis {
 		_rightDriveMaster.set(rightPosition);
 	}
 	
-	// stop the motors
-	public void FullStop() { 
-		EnableBrakeMode(true);
-		ArcadeDrive(0.0, 0.0);
-	}
-	
 	public void EnableBrakeMode(boolean isEnabled) {
 		_leftDriveMaster.enableBrakeMode(isEnabled);
 		_leftDriveSlave.enableBrakeMode(isEnabled);
@@ -239,40 +218,6 @@ public class Chassis {
 		}
 	}
 	
-	public void ZeroDriveEncoders() {
-		_leftDriveMaster.setPosition(0.0);
-		_rightDriveMaster.setPosition(0.0);
-	}
-	
-	// update the Dashboard with any Chassis specific data values
-	public void OutputToSmartDashboard() {
-		String chassisDriveGearPosition = "";
-		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
-			chassisDriveGearPosition = "HIGH_GEAR";
-		} 
-		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION) {
-			chassisDriveGearPosition = "LOW_GEAR";
-		} else {
-			chassisDriveGearPosition = "UNKNOWN";
-		}
-		
-		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
-		SmartDashboard.putNumber("Left Position", getLeftEncoderCurrentPosition());
-		SmartDashboard.putNumber("Right Position", getRightEncoderCurrentPosition());
-		SmartDashboard.putNumber("Left Velocity", getLeftEncoderCurrentVelocity());
-		SmartDashboard.putNumber("Right Velocity", getRightEncoderCurrentVelocity());
-	}
-	
-	public void UpdateLogData(LogData logData) {
-		logData.AddData("Chassis:LeftDriveMtrSpd", String.format("%.2f", _leftDriveMaster.getSpeed()));
-		logData.AddData("Chassis:LeftDriveMtr%VBus", String.format("%.2f", _leftDriveMaster.getOutputVoltage()/_leftDriveMaster.getBusVoltage()));
-		logData.AddData("Chassis:LeftDriveMtrPos", String.format("%.0f", _leftDriveMaster.getPosition()));
-		
-		logData.AddData("Chassis:RightDriveMtrSpd", String.format("%.2f", _rightDriveMaster.getSpeed()));
-		logData.AddData("Chassis:RightDriveMtr%VBus", String.format("%.2f", _rightDriveMaster.getOutputVoltage()/_rightDriveMaster.getBusVoltage()));
-		logData.AddData("Chassis:RightDriveMtrPos", String.format("%.0f", _rightDriveMaster.getPosition()));
-	}
-	
 	//============================================================================================
 	// Property Accessors follow
 	//============================================================================================
@@ -312,6 +257,48 @@ public class Chassis {
 	
 	public double getRightEncoderCurrentVelocity() {
 		return (_rightDriveMaster.getEncVelocity()/7.5);
+	}
+	
+	@Override
+	public void stop() {
+		EnableBrakeMode(true);
+		ArcadeDrive(0.0, 0.0);
+	}
+	
+	@Override
+	public void zeroSensors() {
+		_leftDriveMaster.setPosition(0.0);
+		_rightDriveMaster.setPosition(0.0);
+	}
+	
+	@Override
+	public void outputToSmartDashboard() {
+		String chassisDriveGearPosition = "";
+		if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION) {
+			chassisDriveGearPosition = "HIGH_GEAR";
+		} 
+		else if (_shifterSolenoidPosition == RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION) {
+			chassisDriveGearPosition = "LOW_GEAR";
+		} else {
+			chassisDriveGearPosition = "UNKNOWN";
+		}
+		
+		SmartDashboard.putString("Driving Gear", chassisDriveGearPosition);
+		SmartDashboard.putNumber("Left Position", getLeftEncoderCurrentPosition());
+		SmartDashboard.putNumber("Right Position", getRightEncoderCurrentPosition());
+		SmartDashboard.putNumber("Left Velocity", getLeftEncoderCurrentVelocity());
+		SmartDashboard.putNumber("Right Velocity", getRightEncoderCurrentVelocity());
+	}
+	
+	@Override
+	public void updateLogData(LogData logData) {
+		logData.AddData("Chassis:LeftDriveMtrSpd", String.format("%.2f", _leftDriveMaster.getSpeed()));
+		logData.AddData("Chassis:LeftDriveMtr%VBus", String.format("%.2f", _leftDriveMaster.getOutputVoltage()/_leftDriveMaster.getBusVoltage()));
+		logData.AddData("Chassis:LeftDriveMtrPos", String.format("%.0f", _leftDriveMaster.getPosition()));
+		
+		logData.AddData("Chassis:RightDriveMtrSpd", String.format("%.2f", _rightDriveMaster.getSpeed()));
+		logData.AddData("Chassis:RightDriveMtr%VBus", String.format("%.2f", _rightDriveMaster.getOutputVoltage()/_rightDriveMaster.getBusVoltage()));
+		logData.AddData("Chassis:RightDriveMtrPos", String.format("%.0f", _rightDriveMaster.getPosition()));
 	}
 	
 	//============================================================================================
