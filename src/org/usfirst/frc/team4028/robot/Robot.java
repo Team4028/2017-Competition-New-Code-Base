@@ -56,20 +56,20 @@ public class Robot extends IterativeRobot {
 	private static final String ROBOT_NAME = "COMPETITION Chassis";
 	
 	// ===========================================================
-	//   Define class level instance variables for Robot Runtime objects  
+	//   Define class level instance variables for Robot Runtime objects & get instances 
 	// ===========================================================
-	private Chassis _chassis;
-	private Climber _climber;
-	private BallInfeed _ballInfeed;
-	private GearHandler _gearHandler;
-	private Shooter _shooter;
+	private BallInfeed _ballInfeed = BallInfeed.getInstance();
+	private Chassis _chassis = Chassis.getInstance();
+	private Climber _climber = Climber.getInstance();
+	private GearHandler _gearHandler = GearHandler.getInstance();
+	private Shooter _shooter = Shooter.getInstance();
 	
-	private DashboardInputs _dashboardInputs;
-	private DriversStation _driversStation;
+	private DashboardInputs _dashboardInputs = DashboardInputs.getInstance();
+	private DriversStation _driversStation = DriversStation.getInstance();
 	
 	// sensors
 	private Lidar _lidar;
-	private NavXGyro _navX;
+	private NavXGyro _navX = NavXGyro.getInstance();
 	private SwitchableCameraServer _switchableCameraServer;
 	private RoboRealmClient _roboRealmClient;
 	
@@ -88,7 +88,6 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	private AutoShootController _autoShootController;
 	private ChassisAutoAimController _chassisAutoAimGyro;
-	private ChassisAutoAimController _chassisAutoAimVision;
 	private HangGearController _hangGearController;
 	private TrajectoryDriveController _trajController;
 	
@@ -110,7 +109,7 @@ public class Robot extends IterativeRobot {
 	//   Define class level working variables
 	// ===========================================================
 	String _buildMsg = "?";
-	ShooterTable _shooterTable;
+	ShooterTable _shooterTable = ShooterTable.getInstance();
 	String _fmsDebugMsg = "?";
  	long _lastDashboardWriteTimeMSec;
  	long _lastScanEndTimeInMSec;
@@ -125,45 +124,9 @@ public class Robot extends IterativeRobot {
     	// write jar (build) date & time to the dashboard
         //===================
 		_buildMsg = GeneralUtilities.WriteBuildInfoToDashboard(ROBOT_NAME);
-    	
-        //===================
-    	// create instances (and configure) all of all robot subsystems & sensors
-        //===================
-		_ballInfeed = new BallInfeed(RobotMap.BALL_FLOOR_INFEED_MTR_CAN_BUS_ADDR, 
-										RobotMap.PCM_CAN_BUS_ADDR, 
-										RobotMap.BALL_FLOOR_INFEED_EXTEND_PCM_PORT);
-		
-		_chassis = new Chassis(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR, 
-								RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR, 
-								RobotMap.RIGHT_DRIVE_MASTER_CAN_BUS_ADDR, 
-								RobotMap.RIGHT_DRIVE_SLAVE1_CAN_BUS_ADDR,
-								RobotMap.PCM_CAN_BUS_ADDR,
-								RobotMap.SHIFTER_SOLENOID_EXTEND_PCM_PORT,
-								RobotMap.SHIFTER_SOLENOID_RETRACT_PCM_PORT);
-		
-		_climber = new Climber(RobotMap.CLIMBER_CAN_BUS_ADDR);
-		
-		_dashboardInputs = new DashboardInputs();
-		
-		_driversStation = new DriversStation(RobotMap.DRIVER_GAMEPAD_USB_PORT, 
-												RobotMap.OPERATOR_GAMEPAD_USB_PORT,
-												RobotMap.ENGINEERING_GAMEPAD_USB_PORT);
-	
-		_gearHandler = new GearHandler(RobotMap.GEAR_TILT_CAN_BUS_ADDR, RobotMap.GEAR_INFEED_CAN_BUS_ADDR);
-		
-		_shooterTable = new ShooterTable();
-		
-		_shooter = new Shooter(RobotMap.SHOOTER_STG1_CAN_BUS_ADDR, 
-								RobotMap.SHOOTER_STG2_CAN_BUS_ADDR,
-								RobotMap.MAGIC_CARPET_CAN_BUS_ADDR,
-								RobotMap.HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR,
-								RobotMap.HIGH_ROLLER_CAN_BUS_ADDR,
-								RobotMap.SHOOTER_SLIDER_PWM_PORT,
-								_shooterTable);
 		
 		// sensors follow
 		//_lidar = new Lidar(SerialPort.Port.kMXP);		// TODO: Re-enable?
-		_navX = new NavXGyro(RobotMap.NAVX_PORT);
 		
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
 		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
@@ -176,8 +139,7 @@ public class Robot extends IterativeRobot {
 		
 		// telop Controller follow
 		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
-		_chassisAutoAimVision = new ChassisAutoAimController(_chassis, _navX, 0.065, 0.0075, 0.0);
-		_autoShootController = new AutoShootController(_chassisAutoAimVision, _roboRealmClient, _shooter, _shooterTable);
+		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter, _shooterTable);
 		_hangGearController = new HangGearController(_gearHandler, _chassis);
 		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				

@@ -13,6 +13,11 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Chassis extends Subsystem{
+	public static Chassis _instance = new Chassis();
+	
+	public static Chassis getInstance() {
+		return _instance;
+	}
 	
 	// define class level variables for Robot objects
 	private CANTalon _leftDriveMaster, _leftDriveSlave, _rightDriveMaster, _rightDriveSlave;
@@ -57,14 +62,11 @@ public class Chassis extends Subsystem{
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public Chassis(int talonLeftMasterCanBusAddr, int talonLeftSlave1CanBusAddr,
-					int talonRightMasterCanBusAddr, int talonRightSlave1CanBusAddr,
-					int pcmCanBusAddress, 
-					int shifterSolenoidHighGearPCMPort, int shifterSolenoidLowGearPCMPort) {
+	public Chassis() {
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
-    	_leftDriveMaster = new CANTalon(talonLeftMasterCanBusAddr);
+    	_leftDriveMaster = new CANTalon(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR);
     	_leftDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_leftDriveMaster.configEncoderCodesPerRev(1097);
     	_leftDriveMaster.reverseSensor(false);  							// do not invert encoder feedback
@@ -74,15 +76,15 @@ public class Chassis extends Subsystem{
     	_leftDriveMaster.setPID(P_GAIN, I_GAIN, D_GAIN);
     	_leftDriveMaster.setF(F_GAIN);
 
-		_leftDriveSlave = new CANTalon(talonLeftSlave1CanBusAddr);
+		_leftDriveSlave = new CANTalon(RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR);
 	   	_leftDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
-	   	_leftDriveSlave.set(talonLeftMasterCanBusAddr);
+	   	_leftDriveSlave.set(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR);
 	    _leftDriveSlave.enableLimitSwitch(false, false);
 
     	// ===================
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
-		_rightDriveMaster = new CANTalon(talonRightMasterCanBusAddr);
+		_rightDriveMaster = new CANTalon(RobotMap.RIGHT_DRIVE_MASTER_CAN_BUS_ADDR);
     	_rightDriveMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
     	_rightDriveMaster.configEncoderCodesPerRev(1097);
     	_rightDriveMaster.reverseSensor(true);  							// do not invert encoder feedback
@@ -93,15 +95,15 @@ public class Chassis extends Subsystem{
     	_rightDriveMaster.setPID(P_GAIN, I_GAIN, D_GAIN);
     	_rightDriveMaster.setF(F_GAIN);
 
-		_rightDriveSlave = new CANTalon(talonRightSlave1CanBusAddr);
+		_rightDriveSlave = new CANTalon(RobotMap.RIGHT_DRIVE_SLAVE1_CAN_BUS_ADDR);
 		_rightDriveSlave.changeControlMode(CANTalon.TalonControlMode.Follower);	// set this mtr ctrlr as a slave
-		_rightDriveSlave.set(talonRightMasterCanBusAddr);
+		_rightDriveSlave.set(RobotMap.RIGHT_DRIVE_MASTER_CAN_BUS_ADDR);
 		_rightDriveSlave.enableLimitSwitch(false, false);
     	  	
     	//====================
     	// Shifter
     	//====================
-    	_shifterSolenoid = new DoubleSolenoid(pcmCanBusAddress, shifterSolenoidHighGearPCMPort, shifterSolenoidLowGearPCMPort);
+    	_shifterSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_BUS_ADDR, RobotMap.SHIFTER_SOLENOID_EXTEND_PCM_PORT, RobotMap.SHIFTER_SOLENOID_RETRACT_PCM_PORT);
     	
     	//====================
     	// Arcade Drive

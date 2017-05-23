@@ -6,6 +6,7 @@ import org.usfirst.frc.team4028.robot.utilities.ShooterTableEntry;
 
 import java.util.Date;
 
+import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import com.ctre.CANTalon;
@@ -32,6 +33,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //  8		TomB		9.Mar.2017		Refactor for new infeed 3 motor combo
 //-------------------------------------------------------------
 public class Shooter extends Subsystem{
+	public static Shooter _instance = new Shooter();
+	
+	public static Shooter getInstance() {
+		return _instance;
+	}
+	
 	// =====================================================================
 	// 5 DC Motors
 	//		1 Talon w/ Encoder, 	PID V Mode		2nd Stage
@@ -130,12 +137,9 @@ public class Shooter extends Subsystem{
 	//============================================================================================
 	// CONSTRUCTORS FOLLOW
 	//============================================================================================
-	public Shooter(int firstStgMtrCanBusAddr, int secondStageMtrCanBusAddr, 
-					int magicCarpetMtrCanBusAddr, int highSpeedInfeedLaneMtrCanBusAddr, 
-					int highRollerMtrCanBusAddr, int sliderPWMPort,
-					ShooterTable shooterTable) {
+	private Shooter() {
 		// First Stage Motor
-		_firstStgMtr = new CANTalon(firstStgMtrCanBusAddr);
+		_firstStgMtr = new CANTalon(RobotMap.SHOOTER_STG1_CAN_BUS_ADDR);
 		_firstStgMtr.changeControlMode(CANTalon.TalonControlMode.Speed);	// open loop throttle
 		_firstStgMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	_firstStgMtr.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Relative);	// set encoder to be feedback device
@@ -155,7 +159,7 @@ public class Shooter extends Subsystem{
 		//_firstStgMtr.SetVelocityMeasurementWindow(windowSize);
 		
 		// Second Stage Motor
-		_secondStgMtr = new CANTalon(secondStageMtrCanBusAddr);
+		_secondStgMtr = new CANTalon(RobotMap.SHOOTER_STG2_CAN_BUS_ADDR);
 		_secondStgMtr.changeControlMode(CANTalon.TalonControlMode.Speed);	// open loop throttle
 		_secondStgMtr.enableBrakeMode(false);							// default to brake mode DISABLED
     	_secondStgMtr.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Relative);	// set encoder to be feedback device
@@ -174,13 +178,13 @@ public class Shooter extends Subsystem{
 		_secondStgMtr.setD(SECOND_STAGE_MTG_D_GAIN);
 				
 		// Magic Carpet Motor
-		_magicCarpetMtr = new CANTalon(magicCarpetMtrCanBusAddr);
+		_magicCarpetMtr = new CANTalon(RobotMap.MAGIC_CARPET_CAN_BUS_ADDR);
 		_magicCarpetMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		_magicCarpetMtr.enableBrakeMode(false);
 		_magicCarpetMtr.enableLimitSwitch(false, false);
 		
 		// High Speed Infeed Lane Motor
-		_highSpeedInfeedLaneMtr = new CANTalon(highSpeedInfeedLaneMtrCanBusAddr);
+		_highSpeedInfeedLaneMtr = new CANTalon(RobotMap.HIGH_SPEED_INFEED_LANE_CAN_BUS_ADDR);
 		_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		//_highSpeedInfeedLaneMtr.changeControlMode(CANTalon.TalonControlMode.Voltage);
 		//_highSpeedInfeedLaneMtr.setVoltageCompensationRampRate(24.0);
@@ -188,13 +192,13 @@ public class Shooter extends Subsystem{
 		_highSpeedInfeedLaneMtr.enableLimitSwitch(false, false);
 		
 		// High Roller Motor
-		_highRollerMtr = new CANTalon(highRollerMtrCanBusAddr);
+		_highRollerMtr = new CANTalon(RobotMap.HIGH_ROLLER_CAN_BUS_ADDR);
 		_highRollerMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		_highRollerMtr.enableBrakeMode(false);
 		_highRollerMtr.enableLimitSwitch(false, false);
 		
 		// Slider
-		_linearActuator = new Servo(sliderPWMPort);
+		_linearActuator = new Servo(RobotMap.SHOOTER_SLIDER_PWM_PORT);
 		
 		// Hopper Carousel
 		_hopperCarousel = new Servo(8);
@@ -210,8 +214,8 @@ public class Shooter extends Subsystem{
 		_isStg2MtrTargetRPMBumpingUp = true;
 		
 		// setup the shooter table
-		_shooterTable = shooterTable;
-		_currentShooterTableEntry = shooterTable.getCurrentEntry();
+		_shooterTable = ShooterTable.getInstance();
+		_currentShooterTableEntry = _shooterTable.getCurrentEntry();
 	}
 	
 	//============================================================================================

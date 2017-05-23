@@ -24,6 +24,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //
 //=====> For Changes see Sydney
 public class DashboardInputs { 
+	public static DashboardInputs _instance = new DashboardInputs();
+	
+	public static DashboardInputs getInstance() {
+		return _instance;
+	}
 	
 	private AUTON_MODE _autonModeChoice;
 	private ALLIANCE_COLOR _allianceColor;
@@ -42,7 +47,7 @@ public class DashboardInputs {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public DashboardInputs() {
+	private DashboardInputs() {
 		ConfigAutonModeChoosers();
 		ConfigCameraChoosers();
 	}

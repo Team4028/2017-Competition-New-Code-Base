@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
+import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -15,12 +16,17 @@ import edu.wpi.first.wpilibj.DriverStation;
 //------------------------------------------------------
 //
 public class DriversStation extends BaseDriversStation {
+	public static DriversStation _instance;
+	
+	public static DriversStation getInstance() {
+		return _instance;
+	}
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public DriversStation(int driverGamePadUsbPort, int operatorGamePadUsbPort, int engineeringGamePadUsbPort) {
+	private DriversStation() {
 		// call base class constructor
-		super(driverGamePadUsbPort, operatorGamePadUsbPort, engineeringGamePadUsbPort);
+		super(RobotMap.DRIVER_GAMEPAD_USB_PORT, RobotMap.OPERATOR_GAMEPAD_USB_PORT, RobotMap.ENGINEERING_GAMEPAD_USB_PORT);
 	}
 	
 	/*

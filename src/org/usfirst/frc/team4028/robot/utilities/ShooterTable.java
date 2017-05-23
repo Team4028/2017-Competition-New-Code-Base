@@ -12,6 +12,12 @@ import java.util.LinkedList;
 //------------------------------------------------------
 
 public class ShooterTable {
+	public static ShooterTable _instance = new ShooterTable();
+	
+	public static ShooterTable getInstance() {
+		return _instance;
+	}
+	
 	// define class level working variables
 	private LinkedList<ShooterTableEntry> _teleopTable = null;
 	private LinkedList<ShooterTableEntry> _autonTable = null;
@@ -21,7 +27,7 @@ public class ShooterTable {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public ShooterTable() {
+	private ShooterTable() {
 		_teleopTable = LoadTable();
 		_autonTable = LoadAutonTable();
 		

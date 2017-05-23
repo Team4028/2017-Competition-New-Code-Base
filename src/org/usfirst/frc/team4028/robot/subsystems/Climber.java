@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
 import org.usfirst.frc.team4028.robot.utilities.LogData;
+import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import com.ctre.CANTalon;
@@ -8,6 +9,11 @@ import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Climber extends Subsystem{
+	public static Climber _instance = new Climber();
+	
+	public static Climber getInstance() {
+		return _instance;
+	}
 	
 	private CANTalon _climberMtr;
 	
@@ -30,8 +36,8 @@ public class Climber extends Subsystem{
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public Climber(int talonClimberCanBusAddr) {
-		_climberMtr = new CANTalon(talonClimberCanBusAddr);
+	private Climber() {
+		_climberMtr = new CANTalon(RobotMap.CLIMBER_CAN_BUS_ADDR);
 		_climberMtr.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_climberMtr.enableBrakeMode(true);							// default to brake mode DISABLED
     	//_climberMtr.setFeedbackDevice(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device

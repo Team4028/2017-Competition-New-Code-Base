@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
+import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 
 import com.ctre.CANTalon;
@@ -10,6 +11,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GearHandler extends Subsystem {
+	public static GearHandler _instance = new GearHandler();
+	
+	public static GearHandler getInstance() {
+		return _instance;
+	}
+	
 	// define class level public constants
 	public static final double INFEED_TARGET_CMD = -0.5;
 	public static final double OUTFEED_TARGET_CMD = 0.5;
@@ -70,9 +77,9 @@ public class GearHandler extends Subsystem {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public GearHandler(int talonTiltCanBusAddr, int talonInfeedCanBusAddr) {
+	private GearHandler() {
 		// Tilt Motor
-		_gearTiltMotor = new CANTalon(talonTiltCanBusAddr);
+		_gearTiltMotor = new CANTalon(RobotMap.GEAR_TILT_CAN_BUS_ADDR);
 		_gearTiltMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_gearTiltMotor.enableBrakeMode(false);							// default to brake mode DISABLED
 		_gearTiltMotor.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Relative);	// set encoder to be feedback device
@@ -86,7 +93,7 @@ public class GearHandler extends Subsystem {
 		_gearTiltMotor.configPeakOutputVoltage(TILT_MAX_V_DOWN_TILT, TILT_MAX_V_UP_TILT);
 		
 		// Infeed Motor
-		_gearInfeedMotor = new CANTalon(talonInfeedCanBusAddr);
+		_gearInfeedMotor = new CANTalon(RobotMap.GEAR_INFEED_CAN_BUS_ADDR);
 		_gearInfeedMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_gearInfeedMotor.enableBrakeMode(false);							// default to brake mode DISABLED
 		_gearInfeedMotor.enableLimitSwitch(false, false);
