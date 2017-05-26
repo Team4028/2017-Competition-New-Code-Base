@@ -27,8 +27,6 @@ public class AutoShootController {
 		_roboRealm = roboRealm;
 		_shooter = shooter;
 		_shooterTable = shooterTable;
-		_chassisAutoAim.setDeadband(0.5); // if under deadband, returns output of zero
-		_chassisAutoAim.setMaxMinOutput(0.55, -0.55);
 	}
 	
 	public void EnableBoilerCam() { _roboRealm.ChangeToCamera(VISION_CAMERAS.BOILER); } // Change to Boiler Camera
@@ -61,7 +59,7 @@ public class AutoShootController {
 	}
 	
 	public void ChassisFullStop() {
-		_chassisAutoAim.ChassisFullStop();
+		_chassisAutoAim.stop();
 	}
 	
 	public void AimWithVision(double bias) {

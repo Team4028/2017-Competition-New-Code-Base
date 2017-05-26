@@ -1,5 +1,7 @@
 package org.usfirst.frc.team4028.robot.subsystems;
 
+import org.usfirst.frc.team4028.robot.auton.AutonBase;
+import org.usfirst.frc.team4028.robot.auton.modes.*;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
@@ -134,43 +136,68 @@ public class DashboardInputs {
 	public boolean getIsFMSAttached() {
 		return DriverStation.getInstance().isFMSAttached();
 	}
-
-	public AUTON_MODE get_autonMode() {
+	
+	public AutonBase getSelectedAuton() {
 		_autonModeChoice = _autonModeChooser.getSelected();
-		return _autonModeChoice;
+		switch(_autonModeChoice) {
+		case CROSS_BASE_LINE:
+			return new CrossBaseLine();
+		case DO_NOTHING:
+			return new DoNothing();
+		case HANG_BOILER_GEAR:
+			return new HangBoilerGear();
+		case HANG_BOILER_GEAR_AND_SHOOT:
+			return new HangBoilerGearAndShoot();
+		case HANG_CENTER_GEAR:
+			return new HangCenterGear();
+		case HANG_CENTER_GEAR_AND_SHOOT:
+			return new HangCenterGearAndShoot();
+		case HANG_RETRIEVAL_GEAR:
+			return new HangRetrievalGear();
+		case HIT_HOPPER:
+			return new HitHopper();
+		case TURN_AND_SHOOT:
+			return new TurnAndShoot();
+		case TWO_GEAR:
+			return new TwoGear();
+		case UNDEFINED:
+			return new DoNothing();
+		default:
+			return new DoNothing();
+		}
 	}
 	
-	public ALLIANCE_COLOR get_allianceColor() {
-		_allianceColor =  _allianceChooser.getSelected();
-
+	public boolean getIsBlueAlliance() {
+		_allianceColor = _allianceChooser.getSelected();
+		
 		switch (_allianceColor) {
-			case BLUE_ALLIANCE:
-				return ALLIANCE_COLOR.BLUE_ALLIANCE;
+		case BLUE_ALLIANCE:
+			return true;
+			
+		case RED_ALLIANCE:
+			return false;
+			
+		case USE_FMS:
+			if(getIsFMSAttached()) {
+				Alliance fmsAlliance = DriverStation.getInstance().getAlliance();
 				
-			case RED_ALLIANCE:
-				return ALLIANCE_COLOR.RED_ALLIANCE;
-				
-			case USE_FMS:
-				if(getIsFMSAttached()) {
-					Alliance fmsAlliance = DriverStation.getInstance().getAlliance();
-					
-					switch(fmsAlliance) {
-						case Blue:
-							return ALLIANCE_COLOR.BLUE_ALLIANCE;
-							
-						case Red:
-							return ALLIANCE_COLOR.RED_ALLIANCE;
-							
-						default:
-							return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
-					}
+				switch(fmsAlliance) {
+					case Blue:
+						return true;
+						
+					case Red:
+						return false;
+						
+					default:
+						return true;	// force default
 				}
-				else {
-					return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
-				}
-				
-			default:
-				return ALLIANCE_COLOR.BLUE_ALLIANCE;	// force default
+			}
+			else {
+				return true;	// force default
+			}
+		
+		default:
+			return true;
 		}
 	}
 	

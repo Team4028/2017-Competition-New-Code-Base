@@ -1,8 +1,13 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class SideGearTrajectory {
-	// This class contains arrays which hold motion profiles for the drivetrain
-		public static final int kNumPoints = 236;		
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class SideGearTrajectory extends MotionProfile{
+		
+	public SideGearTrajectory(double heading, boolean flip) {
+		super(heading, 1.0, flip, GearShiftPosition.LOW_GEAR);
+	}
+
 		// Position (rotations)	Velocity (RPM)	Duration (ms)
 		
 		public static double [][]LeftPoints = new double[][]{		

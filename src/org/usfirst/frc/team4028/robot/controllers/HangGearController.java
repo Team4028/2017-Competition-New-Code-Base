@@ -31,9 +31,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 //
 //=====> For Changes see Nick Donahue (javadotmakeitwork)
 public class HangGearController {
+	public static HangGearController _instance = new HangGearController();
+	public static HangGearController getInstance() {
+		return _instance;
+	}
 	// define class level variables for Robot subsystems
-	private GearHandler _gearHandler;
-	private Chassis _chassis;
+	private GearHandler _gearHandler = GearHandler.getInstance();
+	private Chassis _chassis = Chassis.getInstance();
 	
 	// define class level working variables
 	private long _seqStartedTimeStamp;
@@ -51,9 +55,7 @@ public class HangGearController {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-	public HangGearController(GearHandler gearHandler, Chassis chassis) {
-		_gearHandler = gearHandler;
-		_chassis = chassis;
+	private HangGearController() {
 		_isChassisControlEnabled = true;
 	}
 	

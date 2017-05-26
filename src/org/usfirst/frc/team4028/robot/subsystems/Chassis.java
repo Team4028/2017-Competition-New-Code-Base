@@ -265,6 +265,9 @@ public class Chassis extends Subsystem{
 	public void stop() {
 		EnableBrakeMode(true);
 		ArcadeDrive(0.0, 0.0);
+		ShiftGear(GearShiftPosition.HIGH_GEAR);
+		setIsAccDecModeEnabled(true);
+		setDriveSpeedScalingFactor(1.0);
 	}
 	
 	@Override

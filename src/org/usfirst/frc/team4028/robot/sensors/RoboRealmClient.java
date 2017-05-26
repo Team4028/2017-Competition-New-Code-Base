@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.opencv.core.Mat;
 import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
+import org.usfirst.frc.team4028.robot.constants.RobotMap;
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.vision.Dimension;
@@ -36,6 +37,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *     	//_roboRealmClient.ChangeToCamera(ViSION_CAMERAS.BOILER);
  */
 public class RoboRealmClient {
+	public static RoboRealmClient _instance = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, RobotMap.RR_API_PORT, RobotMap.LED_RINGS_DIO_PORT);
+	
+	public static RoboRealmClient getInstance() {
+		return _instance;
+	}
+	
 	// Define local working variables
  	private RoboRealmAPI _rrAPI;
  	
@@ -103,7 +110,7 @@ public class RoboRealmClient {
 	//============================================================================================
 	// constructors follow
 	//============================================================================================
-    public RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int visioLEDsDIOPort)
+    private RoboRealmClient(String kangarooIPv4Addr, int rrPortNo, int visioLEDsDIOPort)
     		//int PCMCanAddr, int gearCamLEDPCMPort, int shooterCamLEDPCMPort) 
     {        	
     	

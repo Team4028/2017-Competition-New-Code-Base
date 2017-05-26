@@ -1,8 +1,13 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class MoveToBoilerTrajectory {
-	// This class contains arrays which hold motion profiles for the drivetrain
-	public static final int kNumPoints = 91;		
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class MoveToBoilerTrajectory extends MotionProfile{
+			
+	public MoveToBoilerTrajectory(double heading, boolean flip) {
+		super(heading, -1.0, flip, GearShiftPosition.LOW_GEAR);
+	}
+
 	// Position (rotations)	Velocity (R/S)	Acceleration (R/S^2) Heading () Duration (ms)
 	
 	public static double [][]LeftPoints = new double [][]{

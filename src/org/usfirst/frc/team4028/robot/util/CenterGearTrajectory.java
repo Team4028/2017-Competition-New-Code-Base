@@ -1,10 +1,14 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class CenterGearTrajectory {
-	// This class contains arrays which hold motion profiles for the drivetrain
-	public static final int kNumPoints = 146;		
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class CenterGearTrajectory extends MotionProfile{
+		
+	public CenterGearTrajectory() {
+		super(1.0, 1.0, false, GearShiftPosition.HIGH_GEAR);
+	}
+
 	// Position (rotations)	Velocity (R/S)	Acceleration (R/S^2) Heading () Duration (ms)
-	
 	public static double [][]LeftPoints = new double [][]{
 		{0.000000, 0.000000, 0.000000, 0.000000, 0.02},
 		{0.002025, 0.101250, 5.062505, 0.000100, 0.02},

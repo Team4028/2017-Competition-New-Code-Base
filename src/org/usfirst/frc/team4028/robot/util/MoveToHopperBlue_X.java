@@ -1,8 +1,14 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class MoveToHopperBlue_X {
-	// This class contains arrays which hold motion profiles for the drivetrain
-	public static final int kNumPoints = 174;		
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class MoveToHopperBlue_X extends MotionProfile{		
+	
+	public MoveToHopperBlue_X() {
+		super(-1.0, -1.0, false, GearShiftPosition.HIGH_GEAR);
+		// TODO Auto-generated constructor stub
+	}
+
 	// Position (rotations)	Velocity (R/S)	Acceleration (R/S^2) Heading () Duration (ms)
 	
 	public static double [][]LeftPoints = new double [][]{

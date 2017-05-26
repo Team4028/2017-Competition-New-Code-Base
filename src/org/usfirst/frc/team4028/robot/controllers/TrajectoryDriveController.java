@@ -2,10 +2,10 @@ package org.usfirst.frc.team4028.robot.controllers;
 import org.usfirst.frc.team4028.robot.util.BeefyMath;
 import org.usfirst.frc.team4028.robot.util.CenterGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.JTurn;
+import org.usfirst.frc.team4028.robot.util.MotionProfile;
 import org.usfirst.frc.team4028.robot.util.MoveToBoilerTrajectory;
 import org.usfirst.frc.team4028.robot.util.MoveToHopperBlue_X;
 import org.usfirst.frc.team4028.robot.util.MoveToHopperRed_X;
-import org.usfirst.frc.team4028.robot.util.MoveToHopper_Y;
 import org.usfirst.frc.team4028.robot.util.SideGearTrajectory;
 import org.usfirst.frc.team4028.robot.util.TrajectoryFollower;
 import org.usfirst.frc.team4028.robot.util.TwoGearLong;
@@ -25,13 +25,18 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TrajectoryDriveController {
+	public static TrajectoryDriveController _instance = new TrajectoryDriveController();
 	
-	private Chassis _chassis;
-	private NavXGyro _navX;
+	public static TrajectoryDriveController getInstance() {
+		return _instance;
+	}
+	
+	private Chassis _chassis = Chassis.getInstance();
+	private NavXGyro _navX = NavXGyro.getInstance();
 	private UpdaterTask _updaterTask;
 	private TrajectoryFollower _leftFollower = new TrajectoryFollower();
 	private TrajectoryFollower _rightFollower = new TrajectoryFollower();
-	private RoboRealmClient _roboRealm;
+	private RoboRealmClient _roboRealm = RoboRealmClient.getInstance();
 	private java.util.Timer _updaterTimer;
 	private double _angleDiff;
 	private double _currentVisionError;
@@ -55,12 +60,9 @@ public class TrajectoryDriveController {
 	private int _currentSegment;
 	private int _trajectoryNumPoints;
 	
-	public TrajectoryDriveController(Chassis chassis, NavXGyro navX, RoboRealmClient roboRealm) {
-		_chassis = chassis;
-		_navX = navX;
+	public TrajectoryDriveController() {
 		_updaterTimer = new java.util.Timer();
 		_updaterTask = new UpdaterTask();
-		_roboRealm = roboRealm;
 		setIsFeedbackDisabled(false);
 	}
 	
@@ -84,14 +86,15 @@ public class TrajectoryDriveController {
 		}
 	}
 	
-	public void loadProfile(double[][] leftProfile, double[][] rightProfile, double direction, double heading, int numPoints) {
+	public void loadProfile(MotionProfile motionProfile) {
 		reset();
-		_leftMotionProfile = leftProfile;
-		_rightMotionProfile = rightProfile;
-		_direction = direction;
-		_heading = heading;
-		_trajectoryNumPoints = numPoints;
 		_angleDiff = 0.0;
+		_leftMotionProfile = motionProfile.getLeftProfile();
+		_rightMotionProfile = motionProfile.getRightProfile();
+		_heading = motionProfile.getHeading();
+		_direction = motionProfile.getDirection();
+		_trajectoryNumPoints = motionProfile.getLeftProfile().length;
+		_chassis.ShiftGear(motionProfile.getGearPosition());
 	}
 	
 	public void loadProfile(MOTION_PROFILE motionProfile, boolean isBlueAlliance) {
@@ -172,20 +175,6 @@ public class TrajectoryDriveController {
 				_heading = 1.0;
 				_direction = -1.0;
 				_trajectoryNumPoints = MoveToHopperRed_X.LeftPoints.length;
-				
-				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
-				break;
-				
-			case MOVE_TO_HOPPER_Y:
-				_leftMotionProfile = MoveToHopper_Y.LeftPoints;
-				_rightMotionProfile = MoveToHopper_Y.RightPoints;
-				_heading = 1.0;
-				if (isBlueAlliance) {
-					_direction = -1.0;
-				} else {
-					_direction = 1.0;
-				}
-				_trajectoryNumPoints = MoveToHopper_Y.LeftPoints.length;
 				
 				_chassis.ShiftGear(GearShiftPosition.LOW_GEAR);
 				break;

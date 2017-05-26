@@ -1,8 +1,13 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class TwoGearShort {
-	// This class contains arrays which hold motion profiles for the drivetrain
-	public static final int kNumPoints = 56;		
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class TwoGearShort extends MotionProfile{
+			
+	public TwoGearShort() {
+		super(1.0, -1.0, false, GearShiftPosition.LOW_GEAR);
+	}
+
 	// Position (rotations)	Velocity (R/S)	Acceleration (R/S^2) Heading () Duration (ms)
 	
 	public static double [][]LeftPoints = new double [][]{

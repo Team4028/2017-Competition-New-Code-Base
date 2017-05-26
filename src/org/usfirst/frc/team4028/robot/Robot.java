@@ -4,42 +4,18 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 
-import org.usfirst.frc.team4028.robot.autonRoutines.CrossBaseLine;
-import org.usfirst.frc.team4028.robot.autonRoutines.DoNothing;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGear;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangBoilerGearAndShoot;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGear;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangCenterGearAndShoot;
-import org.usfirst.frc.team4028.robot.autonRoutines.HangRetrievalGear;
-import org.usfirst.frc.team4028.robot.autonRoutines.HitHopper;
-import org.usfirst.frc.team4028.robot.autonRoutines.TurnAndShoot;
-import org.usfirst.frc.team4028.robot.autonRoutines.TwoGear;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.ALLIANCE_COLOR;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.AUTON_MODE;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.TELEOP_MODE;
-import org.usfirst.frc.team4028.robot.constants.GeneralEnums.VISION_CAMERAS;
-import org.usfirst.frc.team4028.robot.controllers.AutoShootController;
-import org.usfirst.frc.team4028.robot.controllers.ChassisAutoAimController;
-import org.usfirst.frc.team4028.robot.controllers.HangGearController;
-import org.usfirst.frc.team4028.robot.controllers.TrajectoryDriveController;
-import org.usfirst.frc.team4028.robot.constants.RobotMap;
-import org.usfirst.frc.team4028.robot.sensors.Lidar;
-import org.usfirst.frc.team4028.robot.sensors.NavXGyro;
-import org.usfirst.frc.team4028.robot.sensors.RoboRealmClient;
-import org.usfirst.frc.team4028.robot.sensors.SwitchableCameraServer;
-import org.usfirst.frc.team4028.robot.subsystems.Chassis;
+import org.usfirst.frc.team4028.robot.auton.AutonExecuter;
+import org.usfirst.frc.team4028.robot.autonRoutines.*;
+import org.usfirst.frc.team4028.robot.constants.GeneralEnums.*;
+import org.usfirst.frc.team4028.robot.controllers.*;
+import org.usfirst.frc.team4028.robot.sensors.*;
+import org.usfirst.frc.team4028.robot.subsystems.*;
 import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
 import org.usfirst.frc.team4028.robot.utilities.DataLogger;
 import org.usfirst.frc.team4028.robot.utilities.LogData;
 import org.usfirst.frc.team4028.robot.utilities.MovingAverage;
 import org.usfirst.frc.team4028.robot.utilities.ShooterTable;
 import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
-import org.usfirst.frc.team4028.robot.subsystems.Climber;
-import org.usfirst.frc.team4028.robot.subsystems.DashboardInputs;
-import org.usfirst.frc.team4028.robot.subsystems.DriversStation;
-import org.usfirst.frc.team4028.robot.subsystems.GearHandler;
-import org.usfirst.frc.team4028.robot.subsystems.BallInfeed;
-import org.usfirst.frc.team4028.robot.subsystems.Shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -67,11 +43,12 @@ public class Robot extends IterativeRobot {
 	private DashboardInputs _dashboardInputs = DashboardInputs.getInstance();
 	private DriversStation _driversStation = DriversStation.getInstance();
 	
+	private AutonExecuter _autoModeExecuter = null;
+	
 	// sensors
-	private Lidar _lidar;
 	private NavXGyro _navX = NavXGyro.getInstance();
 	private SwitchableCameraServer _switchableCameraServer;
-	private RoboRealmClient _roboRealmClient;
+	private RoboRealmClient _roboRealmClient = RoboRealmClient.getInstance();
 	
 	// Wrapper around data logging (will be null if logging is not enabled)
 	private DataLogger _dataLogger;
@@ -88,8 +65,8 @@ public class Robot extends IterativeRobot {
 	// ===========================================================
 	private AutoShootController _autoShootController;
 	private ChassisAutoAimController _chassisAutoAimGyro;
-	private HangGearController _hangGearController;
-	private TrajectoryDriveController _trajController;
+	private HangGearController _hangGearController = HangGearController.getInstance();
+	private TrajectoryDriveController _trajController = TrajectoryDriveController.getInstance();
 	
 	// ===========================================================
 	//   Define class level instance variables for Robot Auton Routines 
@@ -129,24 +106,18 @@ public class Robot extends IterativeRobot {
 		//_lidar = new Lidar(SerialPort.Port.kMXP);		// TODO: Re-enable?
 		
 		_switchableCameraServer = new SwitchableCameraServer("cam0");			//safe
-		_roboRealmClient = new RoboRealmClient(RobotMap.KANGAROO_IPV4_ADDR, 
-												RobotMap.RR_API_PORT,
-												RobotMap.LED_RINGS_DIO_PORT); 
 												
 												//RobotMap.PCM_CAN_BUS_ADDR,
 												//RobotMap.GEAR_LED_RING_PCM_PORT,
 												//RobotMap.BOILER_LED_RING_PCM_PORT);
 		
 		// telop Controller follow
-		_chassisAutoAimGyro = new ChassisAutoAimController(_chassis, _navX, 0.05, 0.0, 0.0);
+		_chassisAutoAimGyro = new ChassisAutoAimController();
 		_autoShootController = new AutoShootController(_chassisAutoAimGyro, _roboRealmClient, _shooter, _shooterTable);
-		_hangGearController = new HangGearController(_gearHandler, _chassis);
-		_trajController = new TrajectoryDriveController(_chassis, _navX, _roboRealmClient);
 				
 		// debug info for FMS Alliance sensing
 		boolean isFMSAttached = _dashboardInputs.getIsFMSAttached();
-		ALLIANCE_COLOR allianceColor = _dashboardInputs.get_allianceColor();
-		_fmsDebugMsg = "Is FMS Attached: [" + isFMSAttached + "] Alliance: [" + allianceColor + "]";
+		//_fmsDebugMsg = "Is FMS Attached: [" + isFMSAttached + "] Alliance: [" + allianceColor + "]";
 		DriverStation.reportWarning(">>>>> " + _fmsDebugMsg + " <<<<<<", false);
 		
 		// create class to hold Scan Times moving Average samples
@@ -162,67 +133,16 @@ public class Robot extends IterativeRobot {
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void disabledPeriodic() {
-
 		// if logging was enabled, make sure we close the file
     	if(_dataLogger != null) {
 	    	_dataLogger.close();
 	    	_dataLogger = null;
     	}
     	
-    	// stop lidar polling
-    	if(_lidar != null) { 
-    		_lidar.stop();
+    	if(_autoModeExecuter != null) {
+    		_autoModeExecuter.stop();
+    		_autoModeExecuter = null;
     	}
-    	
-    	// cleanup auton resources, since they are not needed in Telop Mode
-    	if(_crossBaseLineAuton != null) {
-    		_crossBaseLineAuton.Disabled();
-    		_crossBaseLineAuton = null;
-    	}
-    	
-		if(_doNothingAuton != null) {
-			_doNothingAuton = null;
-    	}
-		
-		if(_hangBoilerGearAuton != null) {
-			_hangBoilerGearAuton.Disabled();
-			_hangBoilerGearAuton = null;
-    	}
-		
-		if(_hangBoilerGearAndShootAuton != null) {
-			_hangBoilerGearAndShootAuton.Disabled();
-			_hangBoilerGearAndShootAuton = null;
-		}
-		
-		if(_hangCenterGearAuton != null) {
-			_hangCenterGearAuton.Disabled();
-			_hangCenterGearAuton = null;
-    	}
-		
-		if(_hangCenterGearAndShootAuton != null) {
-			_hangCenterGearAndShootAuton.Disabled();
-			_hangCenterGearAndShootAuton = null;
-    	}
-		
-		if(_hangRetrievalGear != null) {
-			_hangRetrievalGear.Disabled();
-			_hangRetrievalGear = null;
-    	}
-		
-		if(_hitHopper != null) {
-			_hitHopper.Disabled();
-			_hitHopper = null;
-		}
-		
-		if(_turnAndShoot != null) {
-			_turnAndShoot.Disabled();
-			_turnAndShoot = null;
-    	}
-		
-		if(_twoGearAuton != null) {
-			_twoGearAuton.Disabled();
-			_twoGearAuton = null;
-		}
 		
 		if(_roboRealmClient != null) {
 			_roboRealmClient.TurnAllVisionLEDsOff();
@@ -246,80 +166,18 @@ public class Robot extends IterativeRobot {
     	
     	_trajController.startTrajectoryController();
     	
-    	// start the lidar polling
-    	if(_lidar != null)	{
-    		_lidar.start(); 
-    	}	
-    	
     	// =====================================
 		// Step 2: Read from Dashboard Choosers to select the Auton routine to run
     	// =====================================
-    	_allianceColor = _dashboardInputs.get_allianceColor();
-    	
-    	_autonMode = _dashboardInputs.get_autonMode();
-
-    	// =====================================
-		// Step 2.1: Create the correct auton routine
-    	//				since we have quite a few auton routines we only create the one we need
-    	//				NOTE: each "real" auton routine is responsible to call the ZeroGearTiltAxisReentrant
-    	//						as many times as required
-    	// =====================================
-    	switch (_autonMode) {
-			case CROSS_BASE_LINE:
-				_crossBaseLineAuton = new CrossBaseLine(_gearHandler, _trajController);
-				_crossBaseLineAuton.Initialize();
-				break;
-				
-			case DO_NOTHING:
-				_doNothingAuton = new DoNothing();
-				_doNothingAuton.Initialize();
-				break;
-				
-			case HANG_BOILER_GEAR:
-				_hangBoilerGearAuton = new HangBoilerGear(_gearHandler, _hangGearController, _trajController);
-				_hangBoilerGearAuton.Initialize();
-				break;
-			
-			case HANG_BOILER_GEAR_AND_SHOOT:
-				_hangBoilerGearAndShootAuton = new HangBoilerGearAndShoot(_autoShootController, _gearHandler, _hangGearController, _shooter, _trajController, _allianceColor);
-				_hangBoilerGearAndShootAuton.Initialize();
-				break;
-				
-			case HANG_CENTER_GEAR:
-				_hangCenterGearAuton = new HangCenterGear(_gearHandler, _hangGearController, _trajController);
-				_hangCenterGearAuton.Initialize();
-				break;
-				
-			case HANG_CENTER_GEAR_AND_SHOOT:
-				_hangCenterGearAndShootAuton = new HangCenterGearAndShoot(_autoShootController, _gearHandler, _chassisAutoAimGyro, _hangGearController, _shooter, _trajController, _allianceColor);
-				_hangCenterGearAndShootAuton.Initialize();
-				break;
-				
-			case HANG_RETRIEVAL_GEAR:
-				_hangRetrievalGear = new HangRetrievalGear(_gearHandler, _hangGearController, _trajController);
-				_hangRetrievalGear.Initialize();
-				break;
-				
-			case HIT_HOPPER:
-				_hitHopper = new HitHopper(_autoShootController, _chassis, _chassisAutoAimGyro, _gearHandler, _shooter, _trajController, _allianceColor);
-				_hitHopper.Initialize();
-				break;
-				
-			case TURN_AND_SHOOT:
-				_turnAndShoot = new TurnAndShoot(_autoShootController, _gearHandler, _shooter, _trajController);
-				_turnAndShoot.Initialize();
-				break;
-				
-			case TWO_GEAR:
-				_twoGearAuton = new TwoGear(_gearHandler, _chassisAutoAimGyro, _hangGearController, _trajController);
-				_twoGearAuton.Initialize();
-				break;
-				
-			case UNDEFINED:
-			default:
-				DriverStation.reportError("Error... NO AUTON Selected!", false);
-				break;
+    	if(_autoModeExecuter != null) {
+    		_autoModeExecuter.stop();
+    		_autoModeExecuter = null;
     	}
+    	
+    	_autoModeExecuter = new AutonExecuter();
+    	_autoModeExecuter.setAutoMode(_dashboardInputs.getSelectedAuton());
+    	_autoModeExecuter.start();
+    	
 		
     	// =====================================
     	// Step 2.3: Turn all vision LEDs offg
@@ -357,77 +215,7 @@ public class Robot extends IterativeRobot {
       		//			and automatically recall it until complete
     		_gearHandler.ZeroGearTiltAxisReentrant();
     	}
-      	  	
-      	// =======================================
-		// Step 2: call the correct Rentrant Auton routine to run
-      	// =======================================
-    	switch (_autonMode) {
-			case CROSS_BASE_LINE:
-				if(_crossBaseLineAuton.getIsStillRunning()) {
-					_crossBaseLineAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case DO_NOTHING:
-				if(_doNothingAuton.getIsStillRunning()) {
-					_doNothingAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case HANG_BOILER_GEAR:
-				if(_hangBoilerGearAuton.getIsStillRunning()) {
-					_hangBoilerGearAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case HANG_BOILER_GEAR_AND_SHOOT:
-				if(_hangBoilerGearAndShootAuton.getIsStillRunning()) {
-					_hangBoilerGearAndShootAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case HANG_CENTER_GEAR:
-				if(_hangCenterGearAuton.getIsStillRunning()) {
-					_hangCenterGearAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case HANG_CENTER_GEAR_AND_SHOOT:
-				if(_hangCenterGearAndShootAuton.getIsStillRunning()) {
-					_hangCenterGearAndShootAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case HANG_RETRIEVAL_GEAR:
-				if(_hangRetrievalGear.getIsStillRunning()) {
-					_hangRetrievalGear.ExecuteRentrant();
-				}
-				break;
-				
-			case HIT_HOPPER:
-				if(_hitHopper.getIsStillRunning()) {
-					_hitHopper.ExecuteRentrant();
-				}
-				break;
-				
-			case TURN_AND_SHOOT:
-				if(_turnAndShoot.getIsStillRunning()) {
-					_turnAndShoot.ExecuteRentrant();
-				}
-				break;
-				
-			case TWO_GEAR:
-				if(_twoGearAuton.getIsStillRunning()) {
-					_twoGearAuton.ExecuteRentrant();
-				}
-				break;
-				
-			case UNDEFINED:
-			default:
-				DriverStation.reportError("Error... NO AUTON Selected!", false);
-				break;
-    	}
-		
+      	
     	// =====================================
     	// Step 3: Optionally Log Data
     	// =====================================
@@ -448,10 +236,6 @@ public class Robot extends IterativeRobot {
 		// #### Chassis ####
     	_chassis.stop(); 								// Stop Motors
     	_chassis.zeroSensors(); 						// Zero drive encoders
-    	_chassis.ShiftGear(GearShiftPosition.HIGH_GEAR);    // Set shifter to HIGH gear
-    	_chassis.setIsAccDecModeEnabled(true);				// Disable acc/dec mode
-		_chassis.setDriveSpeedScalingFactor(1.0);
-		_chassis.EnablePercentVBusMode();
     	
     	// #### Climber ####
     	_climber.stop();
@@ -739,14 +523,6 @@ public class Robot extends IterativeRobot {
 		      		//			and automatically recall it until complete
 		      		_gearHandler.MoveGearToFloorPositionReentrant();
 		      	} 
-		      	//else if(_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
-	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()) {
-	      		//	_gearHandler.MoveTiltAxisVBus(0.1);
-	      		//} 
-		      	//else if (!_driversStation.getIsDriver_SendGearTiltToFloor_BtnPressed()
-	      		//		&& _gearHandler.getIsLastTiltMoveToFloorCallComplete()){
-	      		//	_gearHandler.MoveTiltAxisVBus(0.0);
-	      		//}
 		      	
 		    	//=====================
 		    	// Gear Infeed/Outfeed Cmd
@@ -761,16 +537,6 @@ public class Robot extends IterativeRobot {
 		      	else {
 		      		_gearHandler.SpinInfeedWheelsVBus(0.0);
 		      	} 
-		      	/*
-		      	if (_driversStation.getIsDriver_InfeedGear_BtnJustPressed()) {
-		      		_autoShootController.InitializeVisionAiming();
-		      	}
-		      	if (_driversStation.getIsDriver_InfeedGear_BtnPressed()) {
-		      		_autoShootController.AimWithVision();
-		      		if (_autoShootController.IsReadyToShoot()) {
-		      			DriverStation.reportError("Ready to SHOOT", false);
-		      		}
-		      	} */
 		      	
 				//=====================
 		    	// ====> Enter Gear Hang Mode
@@ -788,19 +554,6 @@ public class Robot extends IterativeRobot {
     	    	// =====================================
     	    	// ====> Enter Climb Mode
     	    	// =====================================
-    			// Original Current Limited Mode Start/Stop using a button
-    	    	//if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {		// TODO: put this back in
-    	    	//	_teleopMode = TELEOP_MODE.CLIMBING;
-    	    	//	_climber.RunClimberReentrant();
-    	    	//}
-    	    	
-    			// 
-    	    	//if (_driversStation.getIsDriver_Climb_ButtonPressed()) {
-    	    	//	_climber.RunMotorTest(Climber.CLIMBER_MOTOR_VBUS);
-    	    	//}
-    	    	//else {
-    	    	//	_climber.RunMotorTest(0.0);
-    	    	//}
     	    	
     			// climb is now a manual mode for Pittsburgh
     			_climber.RunMotorUsingJoyStick(_driversStation.getOperator_ClimberSpeed_JoystickCmd());
@@ -818,26 +571,7 @@ public class Robot extends IterativeRobot {
     			if(!isStillRunning) {
     				_teleopMode = TELEOP_MODE.STANDARD;
     			}
-    			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE
-    			
-    		case CLIMBING:
-
-    			// climb is now a manual mode for Pittsburgh
-    			// arcade drive
-		    	//_chassis.ArcadeDrive((_driversStation.getDriver_ChassisThrottle_JoystickCmd() * -1.0), 	// TomB Gear is now front
-				//						_driversStation.getDriver_ChassisTurn_JoystickCmd());
-		    	
-		    	// climber
-		    	//if (_driversStation.getIsDriver_StartClimb_ButtonJustPressed()) {	
-		    		// cancel climbing
-	    		//	_climber.FullStop();
-	    		//	_teleopMode = TELEOP_MODE.STANDARD;
-		    	//} else {
-		    		// keep calling this method
-		    	//	_climber.RunClimberReentrant();
-		    	//}
-    			break;
-    			
+    			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE   			
     	}	// end of switch statement
 
     	// =====================================
@@ -849,30 +583,6 @@ public class Robot extends IterativeRobot {
     	
     	// Optionally Log Data
     	WriteLogData();
-	}
-		
-	@Override
-	public void testPeriodic()
-	{
-    	// =====================================
-    	// Step 0: Get the DASHBOARD Input values for the current scan cycle
-    	// =====================================
-    	_driversStation.ReadCurrentScanCycleValues();
-    	
-    	// Gear Tilt Zero
-    	if(_driversStation.getIsDriver_RezeroGearTilt_ButtonJustPressed()) {
-    		_roboRealmClient.TurnAllVisionLEDsOff();
-    	}
-
-    	// Driving Gear Shift Toggle
-    	if(_driversStation.getIsDriver_ShiftDrivingGear_BtnJustPressed()) {
-    		_roboRealmClient.TurnGearVisionLEDsOn();
-    	}
-    	
-    	// Gear Tilt Home
-    	if(_driversStation.getIsDriver_SendGearTiltToHome_BtnJustPressed()) {
-    		_roboRealmClient.TurnBoilerrVisionLEDsOn();
-    	}
 	}
 	
 	//--------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -896,8 +606,6 @@ public class Robot extends IterativeRobot {
 	    	if(_driversStation != null)			{ _driversStation.OutputToSmartDashboard(); }
 	    	
 	    	if(_gearHandler != null)			{ _gearHandler.outputToSmartDashboard(); }
-	    		
-	    	if(_lidar != null)					{ _lidar.OutputToSmartDashboard(); }
 	    	
 	    	if(_navX != null)					{ _navX.OutputToSmartDashboard(); }
 	    	

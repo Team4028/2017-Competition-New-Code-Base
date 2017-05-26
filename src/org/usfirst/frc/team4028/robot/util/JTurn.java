@@ -1,6 +1,13 @@
 package org.usfirst.frc.team4028.robot.util;
 
-public class JTurn {
+import org.usfirst.frc.team4028.robot.subsystems.Chassis.GearShiftPosition;
+
+public class JTurn extends MotionProfile{
+	public JTurn(double heading, boolean flip) {
+		super(heading, -1.0, flip, GearShiftPosition.LOW_GEAR);
+		// TODO Auto-generated constructor stub
+	}
+
 	// This class contains arrays which hold motion profiles for the drivetrain	
 	// Position (rotations)	Velocity (R/S)	Acceleration (R/S^2) Heading () Duration (ms)
 	
